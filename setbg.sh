@@ -24,6 +24,6 @@ sed -i 'N;$!P;D' $HOME/.cache/wal/colors-wal-dwm.h
 echo "Recompiling dwm with new colors..."
 
 cd $HOME/.local/src/dwm && make clean install
-cd $HOME/.local/src/st && make clean install
+cd $HOME/.local/src/st && make clean install && make PRETTY_FLAG=1 clean install
 cd $HOME/.local/src/dmenu && make clean install
-
+cd $HOME/.local/src/slstatus && make clean install
