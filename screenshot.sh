@@ -38,7 +38,7 @@ check_dependencies() {
 SAVE_DIR=
 SAVE_PATH=
 FULL_SCREEN=1
-while getopts -d:pfco:h opt
+while getopts d:pfco:h opt
 do
     case $opt in
 	d) SAVE_DIR="$OPTARG" ;;
