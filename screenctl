@@ -1,0 +1,59 @@
+#!/bin/bash
+
+show_help() {
+	printf "Usage: %s [-c|--command cmd] [-o|--output out_device] [-h|--help]\n" "$0"
+}
+
+get_device_status()
+{
+	# $1 - device name
+	xrandr | sed -n "/^$1 connected/,/^[[:alnum:]]/p" | grep -q '\*'  && echo "on" || echo "off"
+}
+
+die()
+{
+	printf "%s\n" "$@" >&2
+	exit 1
+}
+
+declare -A out=( [eDP-1]="--right-of DP-1" [DP-1]="--left-of eDP-1" )
+
+OUTPUT=
+COMMAND=
+
+while (($# > 0)) do
+	  case $1 in
+		  -o|--output) shift
+					   OUTPUT="$1"
+					   ;;
+		  -c|--command) shift
+						COMMAND="$1"
+						;;
+		  -h|--help) show_help
+					 exit 0
+					 ;;
+		  *) show_help
+			 exit 1
+			 ;;
+	  esac
+	  shift
+done
+
+if [[ "$OUTPUT" == "" ]] && [[ "$OUTPUT" != "eDP-1" ]] && [[ "$OUTPUT" != "DP-1" ]]; then
+		  die "Unrecognized output specified."
+fi
+
+if [[ "$COMMAND" == "toggle" ]]; then
+	   # change state of the output device
+	   # on -> off
+	   # off -> on
+	   if [[ "$(get_device_status "$OUTPUT")" == "on" ]]; then
+		   
+		   xrandr --output "$OUTPUT" --off
+		   
+	   else
+		   
+		   xrandr --output "$OUTPUT" ${out[$OUTPUT]} --auto
+		   
+	   fi
+fi
