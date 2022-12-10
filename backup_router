@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# Backup OpenWRT configuration
+
+debug()
+{
+	# make 3rd fd to be like STDOUT
+	exec 3>&1
+	# make STDOUT like STDERR
+	exec >&2
+	printf "$@"
+	exec >&3
+	# close temp fd
+	exec 3>&-
+}
+
+BACKUP_DIR=/var/backups
+BACKUP_FILENAME=/tmp/backup-$(date +%d-%m-%Y-%H:%M)
+SYSUPGRADE_OPTS="-k -c -b"
+IDENT_FILE=~mathway/.ssh/homenet
+
+debug "Creating backup file... "
+ssh -i "$IDENT_FILE" root@openwrt.lan \
+	sysupgrade $SYSUPGRADE_OPTS "$BACKUP_FILENAME" 2>/dev/null &&
+	debug "OK!\n" ||
+		{
+			debug "FAILED :(\n"
+			exit 1
+		}
+
+debug "Copying backup file... "
+scp -q -O -i "$IDENT_FILE" \
+	root@openwrt.lan:"$BACKUP_FILENAME" "$BACKUP_DIR" &&
+	debug "OK!\n" ||
+		{
+			debug "FAILED :(\n"
+			exit 1
+		}
+
+debug "Removing backup file on the router... "
+ssh -i "$IDENT_FILE" root@openwrt.lan \
+	rm -f "$BACKUP_FILENAME" &&
+	debug "OK\n" ||
+		{
+			debug "FAILED :(\n"
+			exit 1
+		}
+
+
+exit 0
