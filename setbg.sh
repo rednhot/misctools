@@ -18,7 +18,7 @@ echo "$wall" > ~/.last_wallpaper_path
 xwallpaper --zoom "$wall"
 
 echo "Generating pywal color schemes..."
-wal -i "$wall" > /dev/null
+wal -i "$wall" > /dev/null || { notify-send "Wal failed :("; exit 1; }
 sed -i 'N;$!P;D' $HOME/.cache/wal/colors-wal-dwm.h
 
 echo "Recompiling dwm with new colors..."
