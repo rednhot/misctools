@@ -159,26 +159,73 @@ debug_msg "Backup file is %s" "$backupfile"
 debug_msg "$tar_opts"
 debug_msg "tmpfile is $tmpf"
 
+
+    
+# special treatment for mozilla firefox
+declare -a ff_files=("places.sqlite"
+					 "favicons.sqlite"
+					 "cert9.db"
+					 "handlers.json"
+					 "prefs.js"
+					 "extensions"
+					 "extension-preferences.json"
+					 "extensions.json"
+					 "search.json.mozlz4"
+					)
+firefox_bak=/tmp/firefox_backup.tar
+pushd ~/.mozilla/firefox/*default-esr
+tar cf $firefox_bak --ignore-failed-read --ignore-command-error "${ff_files[@]}"
+popd
+
 # Pretty long exclusion list here, but it seems that this is the easier way
 # to maintain rather than whitelisting.
 # Compressing by default.
-
-    
 printf "%s" '
 Desktop 
 Downloads
+vmware
+go
+prog/ctf
+work
 QEMU*
-.config/discord 
-.mozilla*extensions
-.wine
-.terminfo
-.face
-.cache
-.Xlog
-.dbus
+backup/homebackup*
 hacking/kali*
+*cache*
+*Cache*
+*history*
+*dbus*
+cookies.txt
+.local/src
+.local/lib
+.local/python
+.local/share
+.local/state
+.config/google-chrome
+.config/discord
+.config/gh
+.config/pulse
+.config/qBittorrent
+.config/systemd
+.config/VirtualBox
+.config/vlc
+.config/xfce4
+.mozilla
+.lesshst
+.viminfo
+.wget-hsts
+.Xlog
+.wine
+.ipython
+.msf4
+.pyvenv
+.terminfo
+.bash_history
+.zsh_history
+.face
+.Xlog
 .npm
 .gradle
+.hcxtools
 .java
 .local
 .BurpSuite
@@ -186,7 +233,8 @@ hacking/kali*
 .ropper' | 
 tar -hczSpf "$tmpf" --exclude-from - \
     --ignore-failed-read --ignore-command-error $tar_opts "$@" \
-    --warning no-file-removed .* *
+    --warning no-file-removed .* * $firefox_bak
+rm -f $firefox_bak
 
 # Encrypt the backup file if user wants that.
 if [ "$ENCRYPT" = "1" ]; then
